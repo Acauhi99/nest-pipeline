@@ -62,10 +62,10 @@ Cliente (gRPC) → CreateOrderUseCase → Order Entity → Repository
 
 ### ✅ Fase 1: Foundation (Setup Básico)
 
-- [ ] 1.1 - Inicializar projeto NestJS
-- [ ] 1.2 - Configurar TypeScript (strict mode)
-- [ ] 1.3 - Criar estrutura de pastas
-- [ ] 1.4 - Configurar dependências (gRPC, RabbitMQ, EventEmitter)
+- [x] 1.1 - Inicializar projeto NestJS
+- [x] 1.2 - Configurar TypeScript (strict mode)
+- [x] 1.3 - Criar estrutura de pastas
+- [x] 1.4 - Configurar dependências (gRPC, RabbitMQ, EventEmitter)
 
 ### ⬜ Fase 2: Domain Layer (Núcleo de Negócio)
 
@@ -160,7 +160,18 @@ Cliente (gRPC) → CreateOrderUseCase → Order Entity → Repository
 ### 2025-01-XX
 
 - ✅ Plano de implementação criado
-- ⏳ Aguardando início da Fase 1
+- ✅ Fase 1 concluída: Setup básico
+  - Projeto inicializado com pnpm
+  - TypeScript configurado (strict mode)
+  - Estrutura de pastas criada
+  - Dependências instaladas: NestJS, gRPC, RabbitMQ, EventEmitter
+  - Scripts configurados (build, start, test)
+  - Pacotes atualizados para versões mais recentes:
+    - NestJS 10.x → 11.x
+    - EventEmitter 2.x → 3.x
+    - @types/node 20.x → 24.x
+  - Build testado e funcionando ✅
+- ⏳ Próximo: Fase 2 - Domain Layer
 
 ---
 
@@ -175,4 +186,4 @@ Cliente (gRPC) → CreateOrderUseCase → Order Entity → Repository
 ---
 
 **Última Atualização**: 2025-01-XX
-**Próximo Step**: Fase 1.1 - Inicializar projeto NestJS
+**Próximo Step**: Fase 2.1 - Criar enums (OrderStatus, PaymentStatus)
