@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { envConfig } from '../../config/env.config';
 import {
   OrderDocument,
   OrderSchema,
@@ -16,9 +17,7 @@ import {
 
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      process.env.MONGO_URI || 'mongodb://localhost:27017/nest-pipeline',
-    ),
+    MongooseModule.forRoot(envConfig.mongo.uri),
     MongooseModule.forFeature([
       { name: OrderDocument.name, schema: OrderSchema },
       { name: PaymentDocument.name, schema: PaymentSchema },

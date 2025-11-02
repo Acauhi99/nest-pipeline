@@ -6,6 +6,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import * as amqp from 'amqplib';
+import { envConfig } from '../../config/env.config';
 
 @Injectable()
 export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
@@ -17,8 +18,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    const url =
-      this.rabbitUrl || process.env.RABBITMQ_URL || 'amqp://localhost';
+    const url = this.rabbitUrl || envConfig.rabbitmq.url;
     this.connection = await amqp.connect(url);
     this.channel = await this.connection.createChannel();
   }
