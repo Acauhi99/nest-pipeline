@@ -9,7 +9,10 @@ app.connectMicroservice<MicroserviceOptions>({
   transport: Transport.GRPC,
   options: {
     package: 'order',
-    protoPath: join(import.meta.dirname, './infrastructure/grpc/proto/order.proto'),
+    protoPath: join(
+      import.meta.dirname,
+      './infrastructure/grpc/proto/order.proto',
+    ),
     url: '0.0.0.0:50051',
   },
 });
