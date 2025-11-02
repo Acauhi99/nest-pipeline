@@ -1,5 +1,3 @@
-version: "3.8"
-
 # AMBIENTE DE STRESS TEST COM RECURSOS LIMITADOS
 
 services:
@@ -49,7 +47,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 30s
+      start_period: 60s
+    restart: on-failure
 
   # ============================================
   # RABBITMQ
@@ -63,7 +62,6 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
-      RABBITMQ_VM_MEMORY_HIGH_WATERMARK: 256MB
     networks:
       - app-network
     volumes:
@@ -88,7 +86,7 @@ services:
   # MONGODB
   # ============================================
   mongodb:
-    image: mongo:8-jammy
+    image: mongo:8
     container_name: nest-mongodb
     ports:
       - "27017:27017"

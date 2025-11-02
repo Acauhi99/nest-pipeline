@@ -35,7 +35,7 @@ pnpm build
 
 ```bash
 # Subir ambiente com limites de recursos
-docker-compose -f docker-compose.stress-test.yml up -d
+docker compose -f docker-compose.stress-test.yml up -d
 
 # Executar teste de carga
 k6 run stress-test.js
