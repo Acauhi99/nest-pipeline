@@ -2,7 +2,12 @@ import { Module, ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RabbitMQModule } from './infrastructure/messaging/rabbitmq.module';
-import { InMemoryOrderRepository } from './infrastructure/repositories';
+import { MongoModule } from './infrastructure/database/mongo.module';
+import {
+  MongoOrderRepository,
+  MongoPaymentRepository,
+  MongoInventoryLogRepository,
+} from './infrastructure/repositories';
 
 import {
   CreateOrderUseCase,
@@ -27,6 +32,7 @@ import { NotificationConsumer } from './microservices/notification-service/notif
       maxListeners: 10,
     }),
     RabbitMQModule,
+    MongoModule,
   ],
   controllers: [OrderController],
   providers: [
@@ -36,7 +42,15 @@ import { NotificationConsumer } from './microservices/notification-service/notif
     },
     {
       provide: 'IOrderRepository',
-      useClass: InMemoryOrderRepository,
+      useClass: MongoOrderRepository,
+    },
+    {
+      provide: 'IPaymentRepository',
+      useClass: MongoPaymentRepository,
+    },
+    {
+      provide: 'IInventoryLogRepository',
+      useClass: MongoInventoryLogRepository,
     },
     CreateOrderUseCase,
     ProcessPaymentUseCase,

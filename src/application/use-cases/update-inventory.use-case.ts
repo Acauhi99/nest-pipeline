@@ -1,6 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { IOrderRepository } from '../../common/interfaces';
+import {
+  IOrderRepository,
+  IInventoryLogRepository,
+} from '../../common/interfaces';
 import { InventoryUpdatedEvent } from '../../common/events';
 import { OrderStatus } from '../../domain/enums';
 
@@ -9,6 +12,8 @@ export class UpdateInventoryUseCase {
   constructor(
     @Inject('IOrderRepository')
     private readonly orderRepository: IOrderRepository,
+    @Inject('IInventoryLogRepository')
+    private readonly inventoryLogRepository: IInventoryLogRepository,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -24,6 +29,15 @@ export class UpdateInventoryUseCase {
     }
 
     await this.orderRepository.save(order);
+
+    for (const item of order.items) {
+      await this.inventoryLogRepository.save({
+        orderId,
+        productId: item.productId,
+        quantity: item.quantity,
+        timestamp: new Date(),
+      });
+    }
 
     this.eventEmitter.emit(
       'inventory.updated',

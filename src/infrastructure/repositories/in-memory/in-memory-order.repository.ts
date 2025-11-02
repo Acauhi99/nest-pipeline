@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { IOrderRepository } from '../../common/interfaces';
-import { Order } from '../../domain/entities';
+import { IOrderRepository } from '../../../common/interfaces';
+import { Order } from '../../../domain/entities';
 
 @Injectable()
 export class InMemoryOrderRepository implements IOrderRepository {

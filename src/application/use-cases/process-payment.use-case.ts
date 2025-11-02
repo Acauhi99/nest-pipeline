@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'node:crypto';
-import { IOrderRepository } from '../../common/interfaces';
+import { IOrderRepository, IPaymentRepository } from '../../common/interfaces';
 import { PaymentProcessedEvent } from '../../common/events';
 import { Payment } from '../../domain/entities';
 import { PaymentStatus, OrderStatus } from '../../domain/enums';
@@ -11,6 +11,8 @@ export class ProcessPaymentUseCase {
   constructor(
     @Inject('IOrderRepository')
     private readonly orderRepository: IOrderRepository,
+    @Inject('IPaymentRepository')
+    private readonly paymentRepository: IPaymentRepository,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -35,6 +37,7 @@ export class ProcessPaymentUseCase {
     }
 
     await this.orderRepository.save(order);
+    await this.paymentRepository.save(payment);
 
     this.eventEmitter.emit(
       'payment.processed',

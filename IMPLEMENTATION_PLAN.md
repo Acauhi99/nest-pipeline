@@ -33,7 +33,12 @@ src/
 │   ├── use-cases/
 │   └── observers/
 ├── infrastructure/
+│   ├── database/
+│   │   ├── schemas/
+│   │   └── mongo.module.ts
 │   ├── repositories/
+│   │   ├── in-memory/
+│   │   └── mongo/
 │   ├── messaging/
 │   └── grpc/
 └── microservices/
@@ -107,12 +112,22 @@ Cliente (gRPC) → CreateOrderUseCase → Order Entity → Repository
 - [x] 6.3 - Implementar Notification Service Consumer
 - [x] 6.4 - Configurar Dead Letter Queues (implementado via durable queues)
 
-### 🟡 Fase 7: Tests & DevOps
+### ✅ Fase 7: Database Layer (MongoDB)
 
-- [ ] 7.1 - Unit tests (Use Cases)
-- [ ] 7.2 - Unit tests (Observers)
-- [ ] 7.3 - Integration tests (gRPC)
-- [x] 7.4 - Docker Compose (RabbitMQ + App)
+- [x] 7.1 - Adicionar dependências MongoDB (@nestjs/mongoose, mongoose)
+- [x] 7.2 - Criar Schemas (OrderSchema, PaymentSchema, InventoryLogSchema)
+- [x] 7.3 - Implementar MongoOrderRepository
+- [x] 7.4 - Implementar MongoPaymentRepository
+- [x] 7.5 - Implementar MongoInventoryLogRepository
+- [x] 7.6 - Configurar MongoDB Module
+- [x] 7.7 - Atualizar Docker Compose (adicionar MongoDB)
+- [x] 7.8 - Migrar de InMemory para Mongo nos Use Cases
+
+### 🟡 Fase 8: Tests & DevOps
+
+- [ ] 8.1 - Unit tests
+- [ ] 8.2 - Integration tests
+- [x] 8.3 - Docker Compose (RabbitMQ + App)
 
 ---
 
@@ -120,12 +135,14 @@ Cliente (gRPC) → CreateOrderUseCase → Order Entity → Repository
 
 ```json
 {
-  "@nestjs/core": "^10.x",
-  "@nestjs/microservices": "^10.x",
-  "@nestjs/event-emitter": "^2.x",
+  "@nestjs/core": "^11.x",
+  "@nestjs/microservices": "^11.x",
+  "@nestjs/event-emitter": "^3.x",
+  "@nestjs/mongoose": "^10.x",
   "@grpc/grpc-js": "^1.x",
-  "@grpc/proto-loader": "^0.7.x",
+  "@grpc/proto-loader": "^0.8.x",
   "amqplib": "^0.10.x",
+  "mongoose": "^8.x",
   "class-validator": "^0.14.x",
   "class-transformer": "^0.5.x"
 }
@@ -196,7 +213,16 @@ Cliente (gRPC) → CreateOrderUseCase → Order Entity → Repository
   - InventoryConsumer atualizando estoque
   - NotificationConsumer enviando notificações
   - Consumers registrados no AppModule
-- 🟡 Fase 7 parcialmente concluída: Tests & DevOps
+- ✅ Fase 7 concluída: Database Layer (MongoDB)
+  - Dependências instaladas: @nestjs/mongoose 11.0.3, mongoose 8.19.2
+  - Schemas criados: OrderDocument, PaymentDocument, InventoryLogDocument
+  - Repositórios implementados: MongoOrderRepository, MongoPaymentRepository, MongoInventoryLogRepository
+  - MongoModule configurado com conexão via MONGO_URI
+  - Docker Compose atualizado com MongoDB 8
+  - AppModule migrado para usar repositórios MongoDB
+  - Use Cases atualizados para persistir payments e inventory logs
+  - Build testado e funcionando ✅
+- 🟡 Fase 8 parcialmente concluída: Tests & DevOps
   - Docker Compose configurado para RabbitMQ
   - Build testado e funcionando ✅
 
@@ -212,4 +238,37 @@ Cliente (gRPC) → CreateOrderUseCase → Order Entity → Repository
 
 ---
 
-**Próximo Step**: Opcional - Implementar testes
+## 🗄️ Estratégia de Persistência MongoDB
+
+### Collections
+
+1. **orders**
+   - Armazena pedidos completos com items
+   - Índices: customerId, status, createdAt
+   - Queries: findById, findByCustomer, findByStatus
+
+2. **payments**
+   - Histórico de pagamentos processados
+   - Índices: orderId, status, processedAt
+   - Queries: findByOrderId, findByStatus
+
+3. **inventory_logs**
+   - Log de atualizações de estoque (auditoria)
+   - Índices: orderId, productId, timestamp
+   - Queries: findByOrderId, findByProduct
+
+### Mapeamento Domain → Schema
+
+- **Order Entity** → OrderDocument (embedded items)
+- **Payment Entity** → PaymentDocument
+- **InventoryLog** → InventoryLogDocument (novo)
+
+### Repositories
+
+- `MongoOrderRepository`
+- `MongoPaymentRepository`
+- `MongoInventoryLogRepository`
+
+---
+
+**Próximo Step**: Implementar Fase 7 - MongoDB Integration
