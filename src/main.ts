@@ -25,4 +25,7 @@ async function bootstrap() {
   console.log(`HTTP Server running on port ${envConfig.app.port}`);
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('Failed to start application:', err);
+  process.exit(1);
+});
