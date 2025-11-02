@@ -1,0 +1,191 @@
+version: "3.8"
+
+# AMBIENTE DE STRESS TEST COM RECURSOS LIMITADOS
+
+services:
+  # ============================================
+  # APLICAÇÃO NESTJS
+  # ============================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nest-app
+    ports:
+      - "3000:3000"
+      - "50051:50051"
+    environment:
+      NODE_ENV: production
+      APP_PORT: 3000
+      GRPC_PORT: 50051
+      MONGO_URI: mongodb://mongodb:27017/nest-pipeline
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - app-network
+    # LIMITES: 512MB RAM, 0.5 CPU (50% de 1 core)
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # ============================================
+  # RABBITMQ
+  # ============================================
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: nest-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_VM_MEMORY_HIGH_WATERMARK: 256MB
+    networks:
+      - app-network
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    # LIMITES: 512MB RAM, 0.5 CPU
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ============================================
+  # MONGODB
+  # ============================================
+  mongodb:
+    image: mongo:8-jammy
+    container_name: nest-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: nest-pipeline
+    networks:
+      - app-network
+    volumes:
+      - mongo-data:/data/db
+    # LIMITES: 1GB RAM, 1 CPU
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/nest-pipeline --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ============================================
+  # PROMETHEUS - COLETA DE MÉTRICAS
+  # ============================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: nest-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=7d"
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+
+  # ============================================
+  # GRAFANA - VISUALIZAÇÃO DE MÉTRICAS
+  # ============================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: nest-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    volumes:
+      - ./monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./monitoring/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./monitoring/grafana/dashboard.json:/var/lib/grafana/dashboards/dashboard.json
+      - grafana-data:/var/lib/grafana
+    networks:
+      - app-network
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+
+  # ============================================
+  # NODE EXPORTER - MÉTRICAS DO HOST
+  # ============================================
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: nest-node-exporter
+    ports:
+      - "9100:9100"
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 64M
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+  rabbitmq-data:
+  prometheus-data:
+  grafana-data:

@@ -1,0 +1,35 @@
+# CONFIGURAÇÃO DO PROMETHEUS
+# Razão: Coletar métricas de todos os serviços para análise de performance
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Métricas do próprio Prometheus
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Métricas do sistema (CPU, RAM, Disco)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # Métricas da aplicação NestJS
+  # Nota: Requer implementar endpoint /metrics na aplicação
+  - job_name: 'nestjs-app'
+    static_configs:
+      - targets: ['app:3000']
+    metrics_path: '/metrics'
+
+  # Métricas do RabbitMQ
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+
+  # Métricas do MongoDB
+  # Nota: Requer mongodb-exporter se necessário
+  - job_name: 'mongodb'
+    static_configs:
+      - targets: ['mongodb:27017']

@@ -1,0 +1,13 @@
+node_modules
+dist
+coverage
+.git
+.env
+.env.*
+!.env.example
+*.log
+*.md
+.vscode
+.idea
+.DS_Store
+pnpm-lock.yaml

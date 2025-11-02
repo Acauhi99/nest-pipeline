@@ -31,8 +31,8 @@ import { NotificationConsumer } from './microservices/notification-service/notif
       delimiter: '.',
       maxListeners: 10,
     }),
-    RabbitMQModule,
     MongoModule,
+    RabbitMQModule,
   ],
   controllers: [OrderController],
   providers: [
@@ -42,15 +42,15 @@ import { NotificationConsumer } from './microservices/notification-service/notif
     },
     {
       provide: 'IOrderRepository',
-      useClass: MongoOrderRepository,
+      useExisting: MongoOrderRepository,
     },
     {
       provide: 'IPaymentRepository',
-      useClass: MongoPaymentRepository,
+      useExisting: MongoPaymentRepository,
     },
     {
       provide: 'IInventoryLogRepository',
-      useClass: MongoInventoryLogRepository,
+      useExisting: MongoInventoryLogRepository,
     },
     CreateOrderUseCase,
     ProcessPaymentUseCase,
