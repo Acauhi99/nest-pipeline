@@ -1,4 +1,10 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  OnModuleDestroy,
+  OnModuleInit,
+  Optional,
+} from '@nestjs/common';
 import * as amqp from 'amqplib';
 
 @Injectable()
@@ -6,16 +12,28 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private connection: amqp.ChannelModel;
   private channel: amqp.Channel;
 
+  constructor(
+    @Optional() @Inject('RABBITMQ_URL') private readonly rabbitUrl?: string,
+  ) {}
+
   async onModuleInit(): Promise<void> {
-    this.connection = await amqp.connect(
-      process.env.RABBITMQ_URL || 'amqp://localhost',
-    );
+    const url =
+      this.rabbitUrl || process.env.RABBITMQ_URL || 'amqp://localhost';
+    this.connection = await amqp.connect(url);
     this.channel = await this.connection.createChannel();
   }
 
   async onModuleDestroy(): Promise<void> {
-    if (this.channel) await this.channel.close();
-    if (this.connection) await this.connection.close();
+    try {
+      if (this.channel) await this.channel.close();
+    } catch {
+      // Channel already closed
+    }
+    try {
+      if (this.connection) await this.connection.close();
+    } catch {
+      // Connection already closed
+    }
   }
 
   async publish(queue: string, message: any): Promise<void> {

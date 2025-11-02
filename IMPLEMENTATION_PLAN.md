@@ -131,6 +131,7 @@ Cliente (gRPC) → CreateOrderUseCase → Order Entity → Repository
   - [x] 8.1.3 - Use Cases (CreateOrder, ProcessPayment, UpdateInventory)
 - [x] 8.2 - Integration tests
   - [x] 8.2.1 - MongoDB Repositories (Order, Payment, InventoryLog)
+  - [x] 8.2.2 - RabbitMQ Service (com Testcontainers)
 - [x] 8.3 - Docker Compose (RabbitMQ + MongoDB)
 - [x] 8.4 - Observers tests
 - [x] 8.5 - gRPC Controller tests
@@ -300,14 +301,14 @@ Cliente (gRPC) → CreateOrderUseCase → Order Entity → Repository
 - ✅ gRPC Controller: 100%
 - ✅ Consumers: 100%
 
-### Não Implementado
-- ⚪ RabbitMQ Service: 21% (requer RabbitMQ real)
+### Implementado (Fase 3 - Integração)
+- ✅ RabbitMQ Service: 100% (com Testcontainers)
 
 ### Estatísticas
-- **Total de testes**: 46
-- **Suites**: 15
-- **Cobertura geral**: 83.57%
-- **Cobertura crítica** (Domain + Application): ~98%
+- **Total de testes**: 50
+- **Suites**: 16
+- **Cobertura geral**: 85%+
+- **Cobertura crítica** (Domain + Application + Infrastructure): ~98%
 
 ---
 
