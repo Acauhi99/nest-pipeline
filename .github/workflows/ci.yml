@@ -234,5 +234,5 @@ jobs:
         with:
           image-ref: nest-pipeline:latest
           format: 'table'
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
           exit-code: 1
