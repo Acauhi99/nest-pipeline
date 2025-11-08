@@ -41,19 +41,9 @@ docker compose -f docker-compose.stress-test.yml up -d
 k6 run stress-test.js
 
 # Acessar métricas
-open http://localhost:3001  # Grafana (admin/admin)
-open http://localhost:9090  # Prometheus
+http://localhost:3001  # Grafana (admin/admin)
+http://localhost:9090  # Prometheus
 ```
-
-## 📚 Documentação
-
-Veja [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) para:
-
-- Arquitetura detalhada
-- Guia de desenvolvimento
-- Configuração de CI/CD
-- Passo a passo de stress test
-- Boas práticas de segurança
 
 ## 🔒 Segurança
 
@@ -70,9 +60,9 @@ Pipeline automatizado com:
 - Lint & Format check
 - Security scanning
 - Unit & Integration tests
-- Coverage tracking (80% mínimo)
+- Coverage tracking
 - Docker build & push
 
 ## 📄 Licença
 
-ISC
+MIT
