@@ -1,29 +1,57 @@
-# 🚀 NestJS Pipeline - Sistema de Processamento de Pedidos
+# NestJS Pipeline
 
-Sistema de microserviços com NestJS, gRPC, RabbitMQ e MongoDB seguindo Clean Architecture.
+Sistema de processamento de pedidos construído para praticar Docker e CI/CD. Implementa uma arquitetura de microserviços com comunicação assíncrona via filas.
 
-## 📦 Stack
+## O que faz
 
-- **Backend**: NestJS + TypeScript
-- **Comunicação**: gRPC + RabbitMQ
+Processa pedidos através de um pipeline assíncrono:
+
+1. Cliente cria pedido via gRPC
+2. Sistema publica eventos no RabbitMQ
+3. Microserviços consomem as filas e processam:
+   - Payment Service: processa pagamento
+   - Inventory Service: atualiza estoque
+   - Notification Service: envia notificações
+
+Cada etapa persiste dados no MongoDB e emite novos eventos para o próximo estágio.
+
+## Como funciona
+
+**Arquitetura**: Clean Architecture com separação em camadas (Domain, Application, Infrastructure)
+
+**Comunicação**:
+- Síncrona: gRPC para criação/consulta de pedidos
+- Assíncrona: RabbitMQ para processamento em background
+
+**Fluxo de dados**:
+```
+Cliente → gRPC → CreateOrder → Event → RabbitMQ → [Payment, Inventory, Notification]
+```
+
+## Stack
+
+- **Runtime**: Node.js 20 + TypeScript
+- **Framework**: NestJS
+- **Comunicação**: gRPC, RabbitMQ (AMQP)
 - **Database**: MongoDB
-- **Testes**: Jest + Testcontainers
+- **Testes**: Jest, Testcontainers, MongoDB Memory Server
+- **Containerização**: Docker, Docker Compose
 - **CI/CD**: GitHub Actions
-- **Monitoramento**: Prometheus + Grafana
+- **Segurança**: Trivy (vulnerability scanning)
 
-## 🏃 Quick Start
+## Desenvolvimento
 
 ```bash
 # Instalar dependências
 pnpm install
 
-# Subir infraestrutura
+# Subir infraestrutura (MongoDB + RabbitMQ)
 docker compose up -d
 
-# Desenvolvimento
+# Rodar aplicação
 pnpm start:dev
 
-# Testes
+# Executar testes
 pnpm test
 pnpm test:cov
 
@@ -31,38 +59,85 @@ pnpm test:cov
 pnpm build
 ```
 
-## 🧪 Stress Test
+## Docker
+
+**Multi-stage build** para otimizar tamanho da imagem:
+- Stage 1: Build da aplicação
+- Stage 2: Imagem final apenas com runtime e dist/
+
+**Boas práticas implementadas**:
+- Usuário não-root (node:node)
+- .dockerignore para reduzir contexto
+- Cache de dependências do pnpm
+- Imagem base Alpine (menor footprint)
 
 ```bash
-# Subir ambiente com limites de recursos
-docker compose -f docker-compose.stress-test.yml up -d
+# Build local
+docker build -t nest-pipeline .
 
-# Executar teste de carga
-k6 run stress-test.js
-
-# Acessar métricas
-http://localhost:3001  # Grafana (admin/admin)
-http://localhost:9090  # Prometheus
+# Rodar container
+docker run -p 3000:3000 -p 50051:50051 nest-pipeline
 ```
 
-## 🔒 Segurança
+## CI/CD Pipeline
 
-- ✅ Usuário não-root em containers
-- ✅ Multi-stage Docker build
-- ✅ Scan de vulnerabilidades (Trivy)
-- ✅ Secrets management no CI/CD
-- ✅ Audit de dependências
+Pipeline automatizada no GitHub Actions com 5 jobs:
 
-## 📊 CI/CD
+### 1. Lint & Format
+- ESLint para qualidade de código
+- Prettier para formatação consistente
 
-Pipeline automatizado com:
+### 2. Security Scan
+- `pnpm audit` para vulnerabilidades em dependências
+- Trivy para scan de código e configurações
+- Upload de resultados para GitHub Security
 
-- Lint & Format check
-- Security scanning
-- Unit & Integration tests
-- Coverage tracking
-- Docker build & push
+### 3. Tests
+- Testes unitários e de integração
+- Cobertura mínima de 80%
+- Serviços (MongoDB, RabbitMQ) via GitHub Actions services
 
-## 📄 Licença
+### 4. Build
+- Compilação TypeScript
+- Upload de artefatos (dist/)
+
+### 5. Docker Build
+- Build da imagem Docker
+- Scan de vulnerabilidades com Trivy
+- Executa apenas em push para main
+
+**Triggers**: Push e Pull Request nas branches main/develop
+
+**Segurança**:
+- Permissões mínimas (least privilege)
+- Dependências fixadas com frozen-lockfile
+- Scan de vulnerabilidades em múltiplas etapas
+
+## Testes
+
+**Cobertura atual**: ~99% statements, 85% branches
+
+**Tipos de teste**:
+- Unit: Entidades, Value Objects, Use Cases
+- Integration: Repositories (MongoDB), Messaging (RabbitMQ)
+- Mocks: EventEmitter, Repositories
+
+**Ferramentas**:
+- Jest como test runner
+- Testcontainers para testes de integração com containers reais
+- MongoDB Memory Server para testes rápidos
+
+## Estrutura do Projeto
+
+```
+src/
+├── domain/              # Entidades, Value Objects, Enums
+├── application/         # Use Cases, DTOs, Observers
+├── infrastructure/      # gRPC, RabbitMQ, MongoDB, Repositories
+├── microservices/       # Consumers (Payment, Inventory, Notification)
+└── config/              # Configurações de ambiente
+```
+
+## Licença
 
 MIT
